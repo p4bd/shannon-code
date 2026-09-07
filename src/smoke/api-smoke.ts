@@ -7,6 +7,9 @@ await loadDotEnv(process.cwd());
 const apiKey = process.env.OPENAI_API_KEY;
 const baseURL = emptyToUndefined(process.env.OPENAI_BASE_URL);
 const model = emptyToUndefined(process.env.OPENAI_MODEL);
+const deepSeekOptions = baseURL?.includes("api.deepseek.com")
+  ? { thinking: { type: "disabled" } }
+  : {};
 
 if (!apiKey) {
   console.error("Missing OPENAI_API_KEY.");
@@ -84,7 +87,8 @@ async function forcedToolCall(input: {
       ],
       tool_choice: { type: "function", function: { name: "add_numbers" } },
       temperature: 0,
-      max_tokens: 32,
+      max_tokens: 128,
+      ...deepSeekOptions,
     }),
   });
 

@@ -8,6 +8,8 @@ Status: alpha. The project is useful for local experiments and codebase explorat
 
 - OpenAI-compatible model provider with `.env` configuration.
 - Interactive `shannon code` REPL and one-shot prompts.
+- Lightweight terminal layout: owl welcome banner, active model and workspace,
+  separated conversation turns, and numbered tool calls with multiline previews.
 - Typed tool registry for file reads, writes, edits, grep, shell, web fetch, tool search, and sub-agent workflows.
 - Permission modes for interactive approval, accept-edits, don't-ask, bypass, and plan mode.
 - Session save/resume, memory, skills, hooks, MCP stdio tools, and TypeScript diagnostics.
@@ -133,7 +135,9 @@ See `docs/architecture-gap.md` for known gaps relative to larger coding-agent sy
 - This is an alpha project. Model behavior can vary across runs.
 - The main agent loop is intentionally simpler than production coding agents with richer streaming executors and cancellation.
 - `tool_search` returns schemas but does not yet implement full deferred tool activation.
-- The CLI is a plain text REPL, not a full TUI.
+- The CLI uses native readline and terminal scrollback. Tool results show up to
+  six preview lines; saved results are available in `.agent/sessions` (large
+  results may reference artifacts). No fullscreen UI or interactive folding.
 - Some smoke runners are intentionally broad and should be refactored if the test harness grows further.
 
 ## License

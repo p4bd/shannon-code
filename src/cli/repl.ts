@@ -1,7 +1,7 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { Agent } from "../core/agent.js";
-import type { ModelProvider } from "../core/model-provider.js";
+import type { ModelMessage, ModelProvider } from "../core/model-provider.js";
 import type { HookExecutor } from "../hooks/types.js";
 import type { DiagnosticsRunner } from "../lsp/diagnostics.js";
 import type {
@@ -28,11 +28,12 @@ import { createDefaultToolRegistry } from "../tools/default-tools.js";
 import type { ToolRegistry } from "../tools/registry.js";
 import { ConsoleLogger } from "../utils/logger.js";
 import { parseReplCommand, REPL_HELP, type ReplCommand } from "./commands.js";
-import { createConsoleEventRenderer, formatAgentMessage } from "./render.js";
+import { createConsoleEventRenderer, formatAgentMessage, formatStartup, formatUserPrompt } from "./render.js";
 
 export interface ReplOptions {
   cwd: string;
   provider: ModelProvider;
+  model?: string;
   sessionStore: SessionStore;
   initialSession?: SerializedSession;
   sessionId: string;
@@ -61,13 +62,14 @@ export async function startRepl(options: ReplOptions): Promise<void> {
   let agent = createAgent(runtimeOptions, options.initialSession);
   const state: ReplState = {};
 
-  console.log(`Shannon Code REPL. Session: ${agent.getSessionId()}`);
-  console.log(`Workspace: ${options.cwd}`);
-  console.log("Type /help for commands, /exit to quit.");
+  console.log(formatStartup(options.cwd, options.model ?? options.provider.name, agent.getSessionId()));
+  if (options.initialSession) {
+    printConversationHistory(options.initialSession.messages);
+  }
 
   try {
     while (true) {
-      const line = await rl.question("You > ");
+      const line = await rl.question(formatUserPrompt());
       const trimmed = line.trim();
       if (trimmed.length === 0) {
         continue;
@@ -220,8 +222,17 @@ async function handleCommand(input: {
         session,
       );
       console.log(`Resumed session ${session.metadata.sessionId}.`);
+      printConversationHistory(session.messages);
       return { agent };
     }
+  }
+}
+
+function printConversationHistory(messages: ModelMessage[]): void {
+  for (const message of messages) {
+    if (!message.content.trim()) continue;
+    if (message.role === "user") console.log(`${formatUserPrompt()}${message.content}`);
+    if (message.role === "assistant") console.log(formatAgentMessage(message.content));
   }
 }
 
@@ -518,7 +529,7 @@ function createInteractiveApprovalPrompt(
 
 function formatApprovalRequest(request: ToolApprovalRequest): string {
   const lines = [
-    `Permission request: ${request.toolName}`,
+    `\nPermission request: ${request.toolName}`,
     `Reason: ${request.reason}`,
     `Subject: ${request.subject}`,
   ];

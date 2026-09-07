@@ -83,6 +83,7 @@ async function main(): Promise<void> {
       await startRepl({
         cwd,
         provider,
+        model: provider.model,
         sessionStore,
         initialSession,
         sessionId,

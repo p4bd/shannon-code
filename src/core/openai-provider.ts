@@ -29,7 +29,8 @@ export class OpenAICompatibleProvider implements ModelProvider {
   readonly supportsPromptCaching = false;
 
   private readonly client: OpenAI;
-  private readonly model: string;
+  private readonly deepSeekRequestOptions: { thinking?: { type: "disabled" } };
+  readonly model: string;
 
   constructor(config: OpenAIProviderConfig) {
     if (!config.apiKey) {
@@ -39,6 +40,9 @@ export class OpenAICompatibleProvider implements ModelProvider {
     }
 
     this.model = config.model ?? DEFAULT_MODEL;
+    this.deepSeekRequestOptions = config.baseURL?.includes("api.deepseek.com")
+      ? { thinking: { type: "disabled" } }
+      : {};
     this.client = new OpenAI({
       apiKey: config.apiKey,
       baseURL: config.baseURL,
@@ -54,6 +58,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
         tool_choice: input.tools && input.tools.length > 0 ? "auto" : undefined,
         temperature: input.temperature,
         max_tokens: input.maxOutputTokens,
+        ...this.deepSeekRequestOptions,
       }, { signal: input.signal }) as unknown;
 
       if (!isChatCompletion(completion)) {
@@ -85,6 +90,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
         temperature: input.temperature,
         max_tokens: input.maxOutputTokens,
         stream: true,
+        ...this.deepSeekRequestOptions,
       }, { signal: input.signal });
 
       let content = "";
