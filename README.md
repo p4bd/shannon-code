@@ -1,27 +1,25 @@
 # Shannon Code
 
-Shannon Code is an experimental TypeScript CLI coding agent inspired by the core workflows of tools like Claude Code. It is built as a portfolio-grade engineering project: modular tools, permissions, sessions, compacting, hooks, skills, MCP integration, evals, and real CLI dogfood tests.
+Shannon Code 是一个使用 TypeScript 编写的实验性命令行编程智能体，参考了 Claude Code 等工具的核心工作流。
 
-Status: alpha. The project is useful for local experiments and codebase exploration, but it is not a production-ready autonomous coding system.
+项目目前处于 alpha 阶段，适合本地实验和代码仓库探索，尚不适合作为生产级自主编程系统使用。
 
-## Highlights
+## 主要功能
 
-- OpenAI-compatible model provider with `.env` configuration.
-- Interactive `shannon code` REPL and one-shot prompts.
-- Lightweight terminal layout: owl welcome banner, active model and workspace,
-  separated conversation turns, and numbered tool calls with multiline previews.
-- Typed tool registry for file reads, writes, edits, grep, shell, web fetch, tool search, and sub-agent workflows.
-- Permission modes for interactive approval, accept-edits, don't-ask, bypass, and plan mode.
-- Session save/resume, memory, skills, hooks, MCP stdio tools, and TypeScript diagnostics.
-- Context budget helpers, manual `/compact`, prompt-too-long retry, and large tool-result artifacts.
-- Unit, integration, eval, perf, real CLI smoke, dogfood, and long soak runners.
+- 支持 OpenAI 兼容接口，可通过 `.env` 配置模型。
+- 支持交互式 `shannon code` REPL 和一次性提示词。
+- 提供文件读取、写入、编辑、搜索、Shell、网页读取和工具搜索能力。
+- 支持交互审批、接受编辑、禁止询问、绕过权限和计划模式。
+- 支持会话保存与恢复、记忆、Skills、Hooks、MCP 和子智能体。
+- 支持上下文预算、手动压缩、超长提示自动重试和大型工具结果落盘。
+- 支持 TypeScript 诊断。
 
-## Requirements
+## 环境要求
 
-- Node.js 20 or newer.
-- An OpenAI-compatible API key for real model runs.
+- Node.js 20 或更高版本。
+- OpenAI 兼容接口的 API Key。
 
-Create a local `.env` file in the project root:
+在项目根目录创建 `.env`：
 
 ```env
 OPENAI_API_KEY=your-key
@@ -29,43 +27,43 @@ OPENAI_MODEL=gpt-4.1-mini
 # OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-`.env` is intentionally ignored by git.
+`.env` 已被 Git 忽略，不会提交到仓库。
 
-## Install
+## 安装
 
 ```powershell
 npm install
 npm run build
 ```
 
-For local CLI usage from this checkout:
+直接从当前仓库运行：
 
 ```powershell
 node dist/cli/shannon.js code
 ```
 
-You can also link the package locally:
+也可以链接为本地命令：
 
 ```powershell
 npm link
 shannon code
 ```
 
-## Usage
+## 使用
 
-Interactive mode:
+交互模式：
 
 ```powershell
 shannon code
 ```
 
-One-shot mode:
+一次性任务：
 
 ```powershell
-shannon code "Inspect this project and summarize the main risks."
+shannon code "检查当前项目并总结主要风险"
 ```
 
-Useful REPL commands:
+常用命令：
 
 ```text
 /help
@@ -77,69 +75,40 @@ Useful REPL commands:
 /exit
 ```
 
-## Testing
+## 代码结构
 
-Fast local baseline:
+- `src/core`：智能体循环、模型接口和错误处理。
+- `src/tools`：工具实现、注册表和结果格式。
+- `src/permissions`：权限模式、Shell 分析和审批。
+- `src/context`：上下文预算、压缩和大型结果存储。
+- `src/cli`：参数解析、REPL 和终端输出。
+- `src/session`、`src/memory`、`src/skills`、`src/hooks`、`src/mcp`、`src/subagent`：扩展能力。
 
-```powershell
-npm run build
-npm test
-```
+## Prompt Caching
 
-Broader deterministic checks:
+系统提示词由命名区段组成。静态区段可以跨回合缓存，动态区段会在每次请求时重新生成。
 
-```powershell
-npm run test:cli
-npm run eval
-npm run perf
-```
+可缓存的静态区段：
 
-Real model smoke tests require `.env`:
+- `agent_core`：角色、工具使用说明和通用安全策略。
+- `skills`：稳定的 Skill 名称、说明、模式和允许使用的工具。
 
-```powershell
-npm run smoke:api
-npm run smoke:cli
-npm run smoke:real-e2e
-npm run smoke:dogfood
-```
+动态区段：
 
-Long dogfood soak:
+- `workspace`：当前工作目录和日期。
+- `project_rules`：本地 `AGENTS.md`、`CLAUDE.md` 或其他规则文件。
+- `memory`：当前提示词召回的记忆。
 
-```powershell
-$env:DOGFOOD_SOAK_ROUNDS='6'
-$env:DOGFOOD_SOAK_KEEP_WORKSPACE='1'
-npm run smoke:dogfood-soak
-```
+模型提供方通过 `supportsPromptCaching` 声明是否支持缓存。不支持时，Shannon 会继续发送普通文本系统提示词；支持时，系统消息会附带通用的 `cacheControl: { type: "ephemeral", key, sectionNames }` 元数据和提示词区段。Anthropic 风格的提供方可以将其转换为原生 `cache_control` 字段，OpenAI 兼容的 Chat Completions 提供方目前会忽略该元数据。
 
-Current evidence from the latest local run:
+缓存命中可以降低重复静态提示词的输入成本和延迟。动态区段不参与缓存键计算，因此工作目录、项目规则或记忆发生变化时不会复用过期上下文。
 
-- `npm test`: 42 files, 172 tests passed.
-- Long dogfood soak: 5/6 rounds passed; stability passed in all 6 rounds; quality passed in all 6 rounds.
+## 已知限制
 
-## Architecture
+- 智能体循环比生产级编程智能体更简单。
+- `tool_search` 目前只返回工具定义，尚未实现完整的延迟工具激活。
+- CLI 使用原生 readline 和终端滚动记录，没有全屏 TUI。
 
-The source is organized by responsibility:
-
-- `src/core`: agent loop, model provider interfaces, provider errors.
-- `src/tools`: typed tools, tool registry, tool result format.
-- `src/permissions`: permission modes, shell analysis, approval checks.
-- `src/context`: token estimates, compaction, large-result artifacts.
-- `src/cli`: argument parsing, REPL, command rendering.
-- `src/session`, `src/memory`, `src/skills`, `src/hooks`, `src/mcp`, `src/subagent`: extension surfaces.
-- `src/evals`, `src/perf`, `src/smoke`: validation and dogfood harnesses.
-
-See `docs/architecture-gap.md` for known gaps relative to larger coding-agent systems.
-
-## Known Limits
-
-- This is an alpha project. Model behavior can vary across runs.
-- The main agent loop is intentionally simpler than production coding agents with richer streaming executors and cancellation.
-- `tool_search` returns schemas but does not yet implement full deferred tool activation.
-- The CLI uses native readline and terminal scrollback. Tool results show up to
-  six preview lines; saved results are available in `.agent/sessions` (large
-  results may reference artifacts). No fullscreen UI or interactive folding.
-- Some smoke runners are intentionally broad and should be refactored if the test harness grows further.
-
-## License
+## 许可证
 
 MIT

@@ -10,34 +10,18 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/cli/index.js",
-    "dev": "tsx src/cli/index.ts",
-    "test": "vitest run",
-    "test:unit": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration",
-    "test:cli": "vitest run tests/integration/cli-e2e.test.ts tests/integration/cli-advanced-e2e.test.ts",
-    "eval": "tsx src/evals/index.ts",
-    "perf": "tsx src/perf/smoke.ts",
-    "smoke:api": "tsx src/smoke/api-smoke.ts",
-    "smoke:cli": "tsx src/smoke/cli-real-smoke.ts",
-    "smoke:real-e2e": "tsx src/smoke/real-product-e2e.ts",
-    "smoke:dogfood": "tsx src/smoke/dogfood.ts",
-    "smoke:dogfood-soak": "tsx src/smoke/dogfood-soak.ts",
-    "dogfood": "tsx src/smoke/dogfood.ts",
-    "dogfood:soak": "tsx src/smoke/dogfood-soak.ts",
-    "test:all": "npm run build && npm test && npm run eval && npm run perf"
+    "dev": "tsx src/cli/index.ts"
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
     "openai": "^6.9.1",
-    "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "typescript": "^5.9.3"
   }
 }
