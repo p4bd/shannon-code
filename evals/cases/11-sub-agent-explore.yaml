@@ -1,0 +1,32 @@
+{
+  "name": "sub-agent explore",
+  "prompt": "Delegate exploration to a sub-agent.",
+  "workspace": {
+    "files": {
+      "package.json": "{ \"name\": \"eval-fixture\" }\n"
+    }
+  },
+  "mock": {
+    "steps": [
+      {
+        "toolCalls": [
+          {
+            "name": "agent",
+            "input": {
+              "agentType": "explore",
+              "prompt": "Find package.json"
+            }
+          }
+        ]
+      },
+      { "content": "Found package.json." },
+      { "content": "Parent received sub-agent summary." }
+    ]
+  },
+  "assertions": [
+    { "type": "tool_called", "name": "agent" },
+    { "type": "session_contains", "text": "Sub-agent explore completed" },
+    { "type": "session_contains", "text": "Found package.json." }
+  ]
+}
+

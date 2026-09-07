@@ -1,0 +1,22 @@
+{
+  "name": "skill invocation",
+  "prompt": "Use the commit skill.",
+  "skillName": "commit",
+  "skillArgs": "summarize staged files",
+  "workspace": {
+    "files": {
+      ".agent/skills/commit/SKILL.md": "---\nname: commit\ndescription: Commit helper\nallowed_tools: [read_file]\nmode: inline\n---\nDraft a concise commit summary.\n"
+    }
+  },
+  "mock": {
+    "steps": [
+      { "content": "Skill executed." }
+    ]
+  },
+  "assertions": [
+    { "type": "session_contains", "text": "Use the \"commit\" skill." },
+    { "type": "session_contains", "text": "summarize staged files" },
+    { "type": "tool_not_called", "name": "run_shell" }
+  ]
+}
+

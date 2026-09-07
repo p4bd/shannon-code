@@ -1,0 +1,28 @@
+{
+  "name": "plan mode blocks write",
+  "prompt": "Attempt to write while in plan mode.",
+  "permissionMode": "plan",
+  "workspace": { "files": {} },
+  "mock": {
+    "steps": [
+      {
+        "toolCalls": [
+          {
+            "name": "write_file",
+            "input": {
+              "path": "blocked.txt",
+              "content": "should not be written\n"
+            }
+          }
+        ]
+      },
+      { "content": "Plan mode blocked the write." }
+    ]
+  },
+  "assertions": [
+    { "type": "tool_called", "name": "write_file" },
+    { "type": "session_contains", "text": "PermissionDenied" },
+    { "type": "file_not_contains", "path": "blocked.txt", "text": "should not be written" }
+  ]
+}
+

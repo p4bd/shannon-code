@@ -1,0 +1,20 @@
+{
+  "name": "shell safety dangerous command",
+  "prompt": "Try a dangerous shell command.",
+  "workspace": { "files": {} },
+  "mock": {
+    "steps": [
+      {
+        "toolCalls": [
+          { "name": "run_shell", "input": { "command": "git reset --hard" } }
+        ]
+      },
+      { "content": "Dangerous command was blocked." }
+    ]
+  },
+  "assertions": [
+    { "type": "tool_called", "name": "run_shell" },
+    { "type": "session_contains", "text": "DangerousCommand" }
+  ]
+}
+

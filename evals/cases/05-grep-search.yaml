@@ -1,0 +1,25 @@
+{
+  "name": "grep search",
+  "prompt": "Find targetSymbol.",
+  "workspace": {
+    "files": {
+      "src/search.ts": "export const targetSymbol = 42;\n",
+      "src/other.ts": "export const other = 1;\n"
+    }
+  },
+  "mock": {
+    "steps": [
+      {
+        "toolCalls": [
+          { "name": "grep_search", "input": { "pattern": "targetSymbol", "path": "src" } }
+        ]
+      },
+      { "content": "Found targetSymbol." }
+    ]
+  },
+  "assertions": [
+    { "type": "tool_called", "name": "grep_search" },
+    { "type": "session_contains", "text": "src/search.ts" }
+  ]
+}
+

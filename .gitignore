@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+.agent/
+.claude/
+coverage/
+*.log
+*.err
+*.pid
+*.exitcode
+
+# Generated local validation reports
+dogfood-report.json
+dogfood-soak-report.json
+*-report.json
+real-*-report.md
+performance-report.md
+eval-report.md
+DOGFOOD_REPORT.md
+DOGFOOD_SOAK_REPORT.md
+TEST_REPORT.md
